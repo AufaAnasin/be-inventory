@@ -1,9 +1,8 @@
 const Product = require('../models/product');
+const { Op } = require('sequelize')
 
-// Logging function
 const log = (message) => console.log(`[ProductController] ${new Date().toISOString()} - ${message}`);
 
-// Validation function for addProduct and updateProduct
 const validateProduct = (data) => {
   const errors = [];
 
@@ -28,7 +27,6 @@ const validateProduct = (data) => {
   return errors.length > 0 ? errors : null;
 };
 
-// Validation function for filter parameters
 const validateFilterParams = (data) => {
   const errors = [];
   if (data.minPrice && (isNaN(data.minPrice) || data.minPrice < 0)) {
@@ -202,17 +200,18 @@ exports.filterProducts = async (req, res) => {
     let whereClause = {};
     if (minPrice || maxPrice) {
       whereClause.price = {};
-      if (minPrice) whereClause.price['>='] = parseFloat(minPrice);
-      if (maxPrice) whereClause.price['<='] = parseFloat(maxPrice);
+      if (minPrice) whereClause.price[Op.gte] = parseFloat(minPrice);
+      if (maxPrice) whereClause.price[Op.lte] = parseFloat(maxPrice);
     }
     if (minQuantity || maxQuantity) {
       whereClause.quantity = {};
-      if (minQuantity) whereClause.quantity['>='] = parseInt(minQuantity);
-      if (maxQuantity) whereClause.quantity['<='] = parseInt(maxQuantity);
+      if (minQuantity) whereClause.quantity[Op.gte] = parseInt(minQuantity);
+      if (maxQuantity) whereClause.quantity[Op.lte] = parseInt(maxQuantity);
     }
 
+    log('Where clause:', whereClause); // Debug log
     const products = await Product.findAll({
-      where: whereClause,
+      where: Object.keys(whereClause).length ? whereClause : null,
       order: [['createdAt', 'DESC']],
     });
 
@@ -233,48 +232,6 @@ exports.filterProducts = async (req, res) => {
     });
   } catch (err) {
     log(`Error filtering products: ${err.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    });
-  }
-};
-
-exports.getProductsWithPagination = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
-
-    log(`Fetching products with pagination - Page: ${page}, Limit: ${limit}`);
-    const { count, rows: products } = await Product.findAndCountAll({
-      offset,
-      limit,
-      order: [['createdAt', 'DESC']],
-    });
-
-    const totalPages = Math.ceil(count / limit);
-
-    if (!products.length) {
-      log('No products found on this page');
-      return res.status(200).json({
-        success: true,
-        message: 'No products found on this page',
-        products: [],
-        pagination: { totalPages, currentPage: page, totalItems: count },
-      });
-    }
-
-    log(`Fetched ${products.length} products on page ${page}`);
-    return res.status(200).json({
-      success: true,
-      message: 'Products fetched with pagination!',
-      products,
-      pagination: { totalPages, currentPage: page, totalItems: count },
-    });
-  } catch (err) {
-    log(`Error fetching products with pagination: ${err.message}`);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
