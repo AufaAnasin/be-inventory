@@ -282,3 +282,48 @@ exports.getProductsWithPagination = async (req, res) => {
   }
 };
 
+exports.searchProducts = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string' || q.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query is required and must be a non-empty string',
+      });
+    }
+
+    log(`Searching products with query: ${q}`);
+    const products = await Product.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${q.trim()}%` } },
+          { description: { [Op.like]: `%${q.trim()}%` } },
+        ],
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!products.length) {
+      log(`No products found for query: ${q}`);
+      return res.status(200).json({
+        success: true,
+        message: 'No products found for the search query',
+        products: [],
+      });
+    }
+
+    log(`Fetched ${products.length} products for query: ${q}`);
+    return res.status(200).json({
+      success: true,
+      message: 'Products searched successfully!',
+      products,
+    });
+  } catch (err) {
+    log(`Error searching products: ${err.message}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+};
