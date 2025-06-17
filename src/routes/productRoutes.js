@@ -15,6 +15,7 @@ router.get("/products", getProducts);
 router.put("/products/:id", updateProduct);
 router.delete("/products/:id", deleteProduct);
 router.get("/products/filter", filterProducts);
-// router.get("/products/pagination", getProductsWithPagination);
+router.get("/products/pagination", getProductsWithPagination);
+
 
 module.exports = router;
