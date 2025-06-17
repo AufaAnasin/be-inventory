@@ -239,3 +239,46 @@ exports.filterProducts = async (req, res) => {
     });
   }
 };
+
+exports.getProductsWithPagination = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    log(`Fetching products with pagination - Page: ${page}, Limit: ${limit}`);
+    const { count, rows: products } = await Product.findAndCountAll({
+      offset,
+      limit,
+      order: [['createdAt', 'DESC']],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    if (!products.length) {
+      log('No products found on this page');
+      return res.status(200).json({
+        success: true,
+        message: 'No products found on this page',
+        products: [],
+        pagination: { totalPages, currentPage: page, totalItems: count },
+      });
+    }
+
+    log(`Fetched ${products.length} products on page ${page}`);
+    return res.status(200).json({
+      success: true,
+      message: 'Products fetched with pagination!',
+      products,
+      pagination: { totalPages, currentPage: page, totalItems: count },
+    });
+  } catch (err) {
+    log(`Error fetching products with pagination: ${err.message}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+};
+
