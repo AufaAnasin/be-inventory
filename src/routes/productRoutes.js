@@ -11,10 +11,12 @@ const {
   searchProducts,
 } = require("../controllers/productController");
 
-router.post("/add-product", addProduct);
+const { authenticateToken } = require('../controllers/authController')
+
+router.post("/add-product", authenticateToken, addProduct);
 router.get("/products", getProducts);
-router.put("/products/:id", updateProduct);
-router.delete("/products/:id", deleteProduct);
+router.put("/products/:id", authenticateToken, updateProduct);
+router.delete("/products/:id", authenticateToken, deleteProduct);
 router.get("/products/filter", filterProducts);
 router.get("/products/pagination", getProductsWithPagination);
 router.get('/products/search', searchProducts);
