@@ -7,13 +7,7 @@ This is the backend API for an Inventory Management System that purpose to fullf
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [API Endpoints](#api-endpoints)
-- [Authentication](#authentication)
-- [Testing](#testing)
-- [Postman Collection](#postman-collection)
-- [Contributing](#contributing)
-- [License](#license)
+- [Postman Collection](https://winter-eclipse-668598.postman.co/workspace/Mekari~0d132b35-3289-460f-8fcc-1f0196eb3470/collection/25966629-b3fb6bf4-6b55-4a2c-9575-07cfb5efa320?action=share&creator=25966629)
 
 ## Features
 - CRUD operations for products (Create, Read, Update, Delete).
